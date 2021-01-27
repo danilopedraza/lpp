@@ -37,8 +37,8 @@ class LexerTest(TestCase):
             Token(TokenType.ASSIGN, '='),
             Token(TokenType.PLUS, '+'),
             Token(TokenType.MINUS, '-'),
-            Token(TokenType.DIV, '/'),
-            Token(TokenType.MUL, '*'),
+            Token(TokenType.DIVISION, '/'),
+            Token(TokenType.MULTIPLICATION, '*'),
             Token(TokenType.LT, '<'),
             Token(TokenType.GT, '>'),
             Token(TokenType.NOT, '!')
@@ -190,5 +190,37 @@ class LexerTest(TestCase):
 
         return self.assertEquals(tokens, expected_tokens)
 
+    def test_two_character_operator(self) -> None:
+        source: str = '''
+            10 == 10;
+            10 != 9;
+            5 <= 6;
+            12 >= -1;
+        '''
+        lexer: Lexer = Lexer(source)
 
+        tokens: List[Token] = []
+        for i in range(17):
+            tokens.append(lexer.next_token())
+        
+        expected_tokens: List[Token] = [
+            Token(TokenType.INT, '10'),
+            Token(TokenType.EQ, '=='),
+            Token(TokenType.INT, '10'),
+            Token(TokenType.SEMICOLON, ';'),
+            Token(TokenType.INT, '10'),
+            Token(TokenType.NOT_EQ, '!='),
+            Token(TokenType.INT, '9'),
+            Token(TokenType.SEMICOLON, ';'),
+            Token(TokenType.INT, '5'),
+            Token(TokenType.LT_OR_EQ, '<='),
+            Token(TokenType.INT, '6'),
+            Token(TokenType.SEMICOLON, ';'),
+            Token(TokenType.INT, '12'),
+            Token(TokenType.GT_OR_EQ, '>='),
+            Token(TokenType.MINUS, '-'),
+            Token(TokenType.INT, '1'),
+            Token(TokenType.SEMICOLON, ';')
+        ]
 
+        return self.assertEquals(tokens, expected_tokens)

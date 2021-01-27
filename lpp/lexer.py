@@ -20,43 +20,72 @@ class Lexer:
         self._skip_whitespace()
 
         if match(r'^=$', self._character):
-            token = Token(TokenType.ASSIGN, self._character)
+            if self._peek_character() == '=':
+                token = self._make_two_character_token(TokenType.EQ)
+            else:
+                token = Token(TokenType.ASSIGN, self._character)
+        
         elif match(r'^\+$', self._character):
             token = Token(TokenType.PLUS, self._character)
+        
         elif match(r'^\-$', self._character):
             token = Token(TokenType.MINUS, self._character)
+        
         elif match(r'^/$', self._character):
-            token = Token(TokenType.DIV, self._character)
+            token = Token(TokenType.DIVISION, self._character)
+        
         elif match(r'^\*$', self._character):
-            token = Token(TokenType.MUL, self._character)
+            token = Token(TokenType.MULTIPLICATION, self._character)
+        
         elif match(r'^$', self._character):
             token = Token(TokenType.EOF, self._character)
+        
         elif match(r'^\($', self._character):
             token = Token(TokenType.LPAREN, self._character)
+        
         elif match(r'^\)$', self._character):
             token = Token(TokenType.RPAREN, self._character)
+        
         elif match(r'^{$', self._character):
             token = Token(TokenType.LBRACE, self._character)
+        
         elif match(r'^}$', self._character):
             token = Token(TokenType.RBRACE, self._character)
+        
         elif match(r'^,$', self._character):
             token = Token(TokenType.COMMA, self._character)
+        
         elif match(r'^;$', self._character):
             token = Token(TokenType.SEMICOLON, self._character)
+        
         elif match(r'^<$', self._character):
-            token = Token(TokenType.LT, self._character)
+            if self._peek_character() == '=':
+                token = self._make_two_character_token(TokenType.LT_OR_EQ)
+            else:
+                token = Token(TokenType.LT, self._character)
+        
         elif match(r'^>$', self._character):
-            token = Token(TokenType.GT, self._character)
+            if self._peek_character() == '=':
+                token = self._make_two_character_token(TokenType.GT_OR_EQ)
+            else:
+                token = Token(TokenType.GT, self._character)
+        
         elif match(r'^!$', self._character):
-            token = Token(TokenType.NOT, self._character)
+            if self._peek_character() == '=':
+                token = self._make_two_character_token(TokenType.NOT_EQ)
+            else:
+                token = Token(TokenType.NOT, self._character)
+        
         elif self._is_letter(self._character):
             literal = self._read_identifier()
             token_type = lookup_token_type(literal)
 
             return Token(token_type, literal)
+        
         elif self._is_number(self._character):
             literal = self._read_number()
             return Token(TokenType.INT, literal)
+        
         else:
             token = Token(TokenType.ILLEGAL, self._character)
         
@@ -69,6 +98,13 @@ class Lexer:
 
     def _is_number(self, character: str) -> bool:
         return bool(match(r'^\d$', character))
+    
+    def _make_two_character_token(self, token_type: TokenType) -> Token:
+        prefix = self._character
+        self._read_character()
+        suffix = self._character
+
+        return Token(token_type, f'{prefix}{suffix}')
     
     def _read_character(self) -> None:
         if self._read_position >= len(self._source):
@@ -94,6 +130,12 @@ class Lexer:
             self._read_character()
         
         return self._source[initial_position : self._position]
+    
+    def _peek_character(self) -> str:
+        if self._read_position >= len(self._source):
+            return ''
+        
+        return self._source[self._read_position]
     
     def _skip_whitespace(self) -> None:
         while match(r'^\s$', self._character):
