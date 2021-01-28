@@ -1,4 +1,7 @@
-from typing import List
+from typing import (
+    List,
+    Optional
+)
 from abc import (
     ABC,
     abstractmethod
@@ -48,4 +51,30 @@ class Program(ASTNode):
     
     def __str__(self) -> str:
         return ''.join([str(statement) for statement in self.statements])
-        
+
+
+class Identifier(Expression):
+
+    def __init__(self,
+                 token: Token,
+                 value: str) -> None:
+        super().__init__(token)
+        self.value = value
+    
+    def __str__(self) -> str:
+        return self.value
+
+
+
+class LetStatement(Statement):
+    
+    def __init__(self,
+                 token: Token,
+                 name: Optional[Identifier] = None,
+                 value: Optional[Expression] = None) -> None:
+        super().__init__(token)
+        self.name = name
+        self.value = value
+
+    def __str__(self) -> str:
+        return f'{self.token_literal()} {str(self.name)} = {str(self.value)};'
