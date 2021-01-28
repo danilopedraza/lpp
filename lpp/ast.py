@@ -1,3 +1,4 @@
+from typing import List
 from abc import (
     ABC,
     abstractmethod
@@ -32,3 +33,19 @@ class Expression(ASTNode):
     
     def token_literal(self) -> str:
         return self.token.literal
+
+
+class Program(ASTNode):
+    
+    def __init__(self, statements: List[Statement]) -> None:
+        self.statements = statements
+    
+    def token_literal(self) -> str:
+        if (len(self.statements) > 0):
+            return self.statements[0].token_literal()
+        
+        return ''
+    
+    def __str__(self) -> str:
+        return ''.join([str(statement) for statement in self.statements])
+        
