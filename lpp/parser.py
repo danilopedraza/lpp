@@ -2,17 +2,23 @@ from typing import (
     List,
     Optional
 )
+
 from lpp.token import (
     Token,
     TokenType
 )
+
 from lpp.ast import Program
+
 from lpp.lexer import Lexer
+
 from lpp.ast import (
     Statement,
     LetStatement,
+    ReturnStatement,
     Identifier
 )
+
 
 class Parser:
 
@@ -64,14 +70,6 @@ class Parser:
         error = f'Se esperaba {token_type}, pero se obtiene {self._peek_token.token_type}'
         self._errors.append(error)
     
-    def _parse_statement(self) -> Optional[Statement]:
-        assert self._current_token is not None
-
-        if self._current_token.token_type is TokenType.LET:
-            return self._parse_let_statement()
-        else:
-            return None
-
     def _parse_let_statement(self) -> Optional[LetStatement]:
         assert self._current_token is not None
 
@@ -91,3 +89,27 @@ class Parser:
             self._advance_tokens()
         
         return let_statement
+    
+    def _parse_return_statement(self) -> Optional[ReturnStatement]:
+        assert self._current_token is not None
+
+        return_statement = ReturnStatement(token=self._current_token)
+
+        self._advance_tokens()
+
+        #TODO: Implement parsing
+
+        while self._current_token.token_type is not TokenType.SEMICOLON:
+            self._advance_tokens()
+        
+        return return_statement
+    
+    def _parse_statement(self) -> Optional[Statement]:
+        assert self._current_token is not None
+
+        if self._current_token.token_type is TokenType.LET:
+            return self._parse_let_statement()
+        elif self._current_token.token_type is TokenType.RETURN:
+            return self._parse_return_statement()
+        else:
+            return None

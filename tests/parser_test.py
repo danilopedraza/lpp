@@ -5,6 +5,7 @@ from typing import (
 
 from unittest import TestCase
 from lpp.ast import (
+    ReturnStatement,
     LetStatement,
     Program
 )
@@ -68,3 +69,19 @@ class ParserTest(TestCase):
         print(parser.errors)
 
         self.assertEquals(len(parser.errors), 1)
+
+    def test_return_statement(self) -> None:
+        source: str = '''
+            regresa 5;
+            regresa x;
+        '''
+
+        lexer: Lexer = Lexer(source)
+        parser: Parser = Parser(lexer)
+
+        program: Program = parser.parse_program()
+
+        self.assertEquals(len(program.statements), 2)
+        for statement in program.statements:
+            self.assertEquals(statement.token_literal(), 'regresa')
+            self.assertIsInstance(statement, ReturnStatement)
