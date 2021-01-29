@@ -70,7 +70,7 @@ class ParserTest(TestCase):
 
         self.assertEquals(len(parser.errors), 1)
 
-    def test_return_statement(self) -> None:
+    def test_return_statements(self) -> None:
         source: str = '''
             regresa 5;
             regresa x;
