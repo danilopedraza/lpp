@@ -3,6 +3,8 @@ from unittest import TestCase
 from lpp.ast import (
     Identifier,
     LetStatement,
+    ExpressionStatement,
+    Integer,
     ReturnStatement,
     Expression,
     Program
@@ -15,6 +17,19 @@ from lpp.token import (
 
 
 class ASTTest(TestCase):
+
+    def test_expression_statement(self) -> None:
+        # Testing 'x;'
+        program: Program = Program(statements=[
+            ExpressionStatement(
+                token=Token(TokenType.RETURN, literal='x'),
+                expression=Identifier(
+                    token=Token(TokenType.IDENT, literal='x'),
+                    value='x')
+            )
+        ])
+
+        self.assertEquals(str(program), 'x')
 
     def test_let_statement(self) -> None:
         # Testing 'variable x = y;'
