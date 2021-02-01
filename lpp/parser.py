@@ -20,6 +20,7 @@ from lpp.ast import (
     Identifier,
     Integer,
     LetStatement,
+    Prefix,
     Program,
     ReturnStatement,
     Statement
@@ -85,6 +86,8 @@ class Parser:
         try:
             prefix_parse_fn = self._prefix_parse_fns[self._current_token.token_type]
         except KeyError:
+            error = f'No se encontró una función para parsear {self._current_token.literal}'
+            self._errors.append(error)
             return None
         
         left_expression = prefix_parse_fn()
@@ -157,6 +160,17 @@ class Parser:
             self._advance_tokens()
 
         return program
+
+    def _parse_prefix_expression(self) -> Prefix:
+        assert self._current_token is not None
+        prefix_expression = Prefix(token=self._current_token,
+                                   operator=self._current_token.literal)
+        
+        self._advance_tokens()
+
+        prefix_expression.right = self._parse_expression(Precedence.PREFIX)
+
+        return prefix_expression
     
     def _parse_return_statement(self) -> Optional[ReturnStatement]:
         assert self._current_token is not None
@@ -188,5 +202,7 @@ class Parser:
     def _register_prefix_fns(self) -> PrefixParseFns:
         return {
             TokenType.IDENT: self._parse_identifier,
-            TokenType.INT: self._parse_integer
+            TokenType.INT: self._parse_integer,
+            TokenType.MINUS: self._parse_prefix_expression,
+            TokenType.NOT: self._parse_prefix_expression
         }
