@@ -231,7 +231,7 @@ class ParserTest(TestCase):
         self.assertEquals(infix.operator, expected_operator)
 
         assert infix.right is not None
-        self.assertEquals(infix.right, expected_right)
+        self._test_literal_expression(infix.right, expected_right)
     
     def _test_program_statements(self,
                                  parser: Parser,
