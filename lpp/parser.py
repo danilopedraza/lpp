@@ -15,6 +15,7 @@ from lpp.token import (
 from lpp.lexer import Lexer
 
 from lpp.ast import (
+    Boolean,
     Expression,
     ExpressionStatement,
     Identifier,
@@ -102,6 +103,12 @@ class Parser:
 
         error = f'Se esperaba {token_type}, pero se obtiene {self._peek_token.token_type}'
         self._errors.append(error)
+    
+    def _parse_boolean(self) -> Boolean:
+        assert self._current_token is not None
+
+        return Boolean(token=self._current_token,
+                       value=self._current_token.token_type == TokenType.TRUE)
     
     def _parse_expression(self, precedence: Precedence) -> Optional[Expression]:
         assert self._current_token is not None
@@ -268,6 +275,8 @@ class Parser:
     
     def _register_prefix_fns(self) -> PrefixParseFns:
         return {
+            TokenType.FALSE: self._parse_boolean,
+            TokenType.TRUE: self._parse_boolean,
             TokenType.IDENT: self._parse_identifier,
             TokenType.INT: self._parse_integer,
             TokenType.MINUS: self._parse_prefix_expression,
