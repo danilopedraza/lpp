@@ -110,7 +110,8 @@ class ParserTest(TestCase):
             ('-a * b;', '((-a) * b)', 1),
             ('!-a;', '(!(-a))', 1),
             ('a + b / c;', '(a + (b / c))', 1),
-            ('3 + 4; -5 * 5;','(3 + 4)((-5) * 5)', 2)
+            ('3 + 4; -5 * 5;','(3 + 4)((-5) * 5)', 2),
+            ('(3 - 2) / (2 + 3)', '((3 - 2) / (2 + 3))', 1)
         ]
 
         for source, expected_result, expected_statement_count in test_sources:
@@ -122,8 +123,6 @@ class ParserTest(TestCase):
             self._test_program_statements(parser, program, expected_statement_count)
             self.assertEquals(str(program), expected_result)
 
-
-    
     def test_parse_errors(self) -> None:
         source: str = 'variable x 5;'
         lexer: Lexer = Lexer(source)
