@@ -145,6 +145,7 @@ class Infix(Expression):
     def __str__(self) -> str:
         return f'({str(self.left)} {self.operator} {str(self.right)})'
 
+
 class Boolean(Expression):
     
     def __init__(self,
@@ -156,3 +157,36 @@ class Boolean(Expression):
     
     def __str__(self) -> str:
         return self.token_literal()
+
+
+class Block(Statement):
+
+    def __init__(self,
+                 token: Token,
+                 statements: List[Statement]) -> None:
+        super().__init__(token)
+        self.statements = statements
+    
+    def __str__(self) -> str:
+        return ''.join([str(statement) for statement in self.statements])
+
+
+class If(Expression):
+
+    def __init__(self,
+                 token: Token,
+                 condition: Optional[Expression] = None,
+                 consequence: Optional[Block] = None,
+                 alternative: Optional[Block] = None) -> None:
+        super().__init__(token)
+        self.condition = condition
+        self.consequence = consequence
+        self.alternative = alternative
+    
+    def __str__(self) -> str:
+        out: str = f'si {str(self.condition)} {str(self.consequence)}'
+
+        if self.alternative:
+            out += f'sino {str(self.alternative)}'
+        
+        return out
