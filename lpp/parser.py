@@ -19,6 +19,7 @@ from lpp.ast import (
     Boolean,
     Expression,
     ExpressionStatement,
+    Function,
     Identifier,
     If,
     Infix,
@@ -165,6 +166,48 @@ class Parser:
         
         return expression_statement
     
+    def _parse_function(self) -> Optional[Function]:
+        assert self._current_token is not None
+        function = Function(token=self._current_token)
+
+        if not self._expected_token(TokenType.LPAREN):
+            return None
+        
+        function.parameters = self._parse_function_parameters()
+
+        if not self._expected_token(TokenType.LBRACE):
+            return None
+        
+        function.body = self._parse_block()
+
+        return function
+    
+    def _parse_function_parameters(self) -> List[Identifier]:
+        assert self._peek_token is not None
+        if self._peek_token.token_type == TokenType.RPAREN:
+            self._advance_tokens()
+            return []
+        
+        self._advance_tokens()
+
+        params: List[Identifier] = []
+        
+        assert self._current_token is not None
+        identifier = Identifier(token=self._current_token, value=self._current_token.literal)
+        params.append(identifier)
+
+        while self._peek_token.token_type == TokenType.COMMA:
+            self._advance_tokens()
+            self._advance_tokens()
+
+            identifier = Identifier(token=self._current_token, value=self._current_token.literal)
+            params.append(identifier)
+        
+        if not self._expected_token(TokenType.RPAREN):
+            return []
+        
+        return params
+
     def _parse_grouped_expression(self) -> Optional[Expression]:
         self._advance_tokens()
         
@@ -202,7 +245,7 @@ class Parser:
         if_expression.consequence = self._parse_block()
 
         if  not(self._peek_token is not None and self._peek_token.token_type is TokenType.ELSE):
-            #DeMorgan is love
+            # DeMorgan is love
             return if_expression
 
         if not self._expected_token(TokenType.ELSE):
@@ -343,5 +386,6 @@ class Parser:
             TokenType.MINUS: self._parse_prefix_expression,
             TokenType.NOT: self._parse_prefix_expression,
             TokenType.LPAREN: self._parse_grouped_expression,
-            TokenType.IF: self._parse_if
+            TokenType.IF: self._parse_if,
+            TokenType.FUNCTION: self._parse_function
         }
