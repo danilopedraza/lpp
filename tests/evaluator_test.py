@@ -18,6 +18,20 @@ from lpp.parser import Parser
 
 class EvaluatorTest(TestCase):
 
+    def test_bang_operator(self) -> None:
+        tests: List[Tuple[str, bool]] = [
+            ('!verdadero', False),
+            ('!falso', True),
+            ('!!verdadero', True),
+            ('!1', False),
+            ('!!1', True),
+            #('!0', True)
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self._test_boolean_object(evaluated, expected)
+
     def test_boolean_evaluation(self) -> None:
         tests: List[Tuple[str, bool]] = [
             ('verdadero', True),
@@ -31,7 +45,9 @@ class EvaluatorTest(TestCase):
     def test_integer_evaluation(self) -> None:
         tests: List[Tuple[str, int]] = [
             ('5', 5),
-            ('1', 1)
+            ('1', 1),
+            ('-100', -100),
+            ('-52', -52)
         ]
 
         for source, expected in tests:

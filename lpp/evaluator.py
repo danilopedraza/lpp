@@ -18,12 +18,41 @@ FALSE = Boolean(False)
 NULL = Null()
 
 
+def _evaluate_bang_operator_expression(right: Object) -> Object:
+    if right is TRUE:
+        return FALSE
+    elif right is FALSE:
+        return TRUE
+    elif right is NULL:
+        return TRUE
+        
+    return FALSE
+
+def _evaluate_minus_operator_expression(right: Object) -> Object:
+    if type(right) != Integer:
+        return NULL
+    
+    right = cast(Integer, right)
+
+    return Integer(-right.value)
+
+def _evaluate_prefix_expression(operator: str, right: Object) -> Object:
+    if operator == '!':
+        return _evaluate_bang_operator_expression(right)
+    elif operator == '-':
+        return _evaluate_minus_operator_expression(right)
+
+    return NULL
+
 def _evaluate_statements(statements: List[ast.Statement]) -> Optional[Object]:
     result: Optional[Object]  = None
     for statement in statements:
         result = evaluate(statement)
     
     return result
+
+def _to_boolean_object(value: bool) -> Boolean:
+    return TRUE if value else FALSE
 
 
 def evaluate(node: ast.ASTNode) -> Optional[Object]:
@@ -49,6 +78,15 @@ def evaluate(node: ast.ASTNode) -> Optional[Object]:
         node = cast(ast.Boolean, node)
 
         assert node.value is not None
-        return TRUE if node.value else FALSE
+        return _to_boolean_object(node.value)
+    
+    elif node_type == ast.Prefix:
+        node = cast(ast.Prefix, node)
+
+        assert node.right is not None
+        right = evaluate(node.right)
+
+        assert right is not None
+        return _evaluate_prefix_expression(node.operator, right)
     
     return None
