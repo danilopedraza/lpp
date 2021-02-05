@@ -11,7 +11,8 @@ from lpp.object import (
     Boolean,
     Null,
     Object,
-    ObjectType
+    ObjectType,
+    Return
 )
 
 
@@ -29,6 +30,17 @@ def _evaluate_bang_operator_expression(right: Object) -> Object:
         return TRUE
         
     return FALSE
+
+def _evaluate_block_statements(block: ast.Block) -> Optional[Object]:
+    result: Optional[Object] = None
+
+    for statement in block.statements:
+        result = evaluate(statement)
+
+        if result is not None and result.type() == ObjectType.RETURN:
+            return result
+    
+    return result
 
 def _evaluate_if_expression(if_expression: ast.If) -> Optional[Object]:
     assert if_expression.condition is not None
@@ -101,10 +113,14 @@ def _evaluate_prefix_expression(operator: str, right: Object) -> Object:
 
     return NULL
 
-def _evaluate_statements(statements: List[ast.Statement]) -> Optional[Object]:
+def _evaluate_program(program: ast.Program) -> Optional[Object]:
     result: Optional[Object]  = None
-    for statement in statements:
+    for statement in program.statements:
         result = evaluate(statement)
+
+        if type(result) == Return:
+            result = cast(Return, result)
+            return result.value
     
     return result
 
@@ -127,7 +143,7 @@ def evaluate(node: ast.ASTNode) -> Optional[Object]:
 
     if node_type == ast.Program:
         node = cast(ast.Program, node)
-        return _evaluate_statements(node.statements)
+        return _evaluate_program(node)
     
     elif node_type == ast.ExpressionStatement:
         node = cast(ast.ExpressionStatement, node)
@@ -168,11 +184,20 @@ def evaluate(node: ast.ASTNode) -> Optional[Object]:
     
     elif node_type == ast.Block:
         node = cast(ast.Block, node)
-        return _evaluate_statements(node.statements)
+        return _evaluate_block_statements(node)
     
     elif node_type == ast.If:
         node = cast(ast.If, node)
 
         return _evaluate_if_expression(node)
+    
+    elif node_type == ast.ReturnStatement:
+        node = cast(ast.ReturnStatement, node)
+
+        assert node.return_value is not None
+        value = evaluate(node.return_value)
+
+        assert value is not None
+        return Return(value)
     
     return None

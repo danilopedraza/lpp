@@ -82,6 +82,28 @@ class EvaluatorTest(TestCase):
             evaluated = self._evaluate_tests(source)
             self._test_integer_object(evaluated, expected)
     
+    def test_return_evaluation(self) -> None:
+        tests: List[Tuple[str, int]] = [
+            ('regresa 10;', 10),
+            ('regresa 1; 2;', 1),
+            ('3; regresa 4 / 2;', 2),
+            ('''
+                si (2 > 1) {
+                    si (5 > 3) {
+                        regresa 1;
+                    }
+                    
+                    regresa 2;
+                }
+            ''', 1)
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self._test_integer_object(evaluated, expected)
+
+
+    
     def _evaluate_tests(self, source: str) -> Object:
         lexer: Lexer = Lexer(source)
         parser: Parser = Parser(lexer)
