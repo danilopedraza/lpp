@@ -35,7 +35,10 @@ class EvaluatorTest(TestCase):
     def test_boolean_evaluation(self) -> None:
         tests: List[Tuple[str, bool]] = [
             ('verdadero', True),
-            ('falso', False)
+            ('falso', False),
+            ('5 > 2', True),
+            ('verdadero != falso', True),
+            ('(-5 < 2) == falso', False)
         ]
 
         for source, expected in tests:
@@ -47,7 +50,10 @@ class EvaluatorTest(TestCase):
             ('5', 5),
             ('1', 1),
             ('-100', -100),
-            ('-52', -52)
+            ('-52', -52),
+            ('2 + 2 + 2', 6),
+            ('2 * 2 * 2', 8),
+            ('(2 + 7) / 3', 3)
         ]
 
         for source, expected in tests:
