@@ -29,6 +29,7 @@ NULL = Null()
 _TYPE_MISMATCH = 'Discrepancia de tipos: {} {} {}'
 _UNKNOWN_INFIX_OPERATOR = 'Operador desconocido: {} {} {}'
 _UNKNOWN_PREFIX_OPERATOR = 'Operador desconocido: {}{}'
+_UNKNOWN_IDENTIFIER = 'Identificador no encontrado: {}'
 
 
 def _evaluate_bang_operator_expression(right: Object) -> Object:
@@ -51,6 +52,12 @@ def _evaluate_block_statements(block: ast.Block, env: Environment) -> Optional[O
             return result
     
     return result
+
+def _evaluate_identifier(node: ast.Identifier, env: Environment) -> Object:
+    try:
+        return env[node.value]
+    except KeyError:
+        return _new_error(_UNKNOWN_IDENTIFIER, [node.value])
 
 def _evaluate_if_expression(if_expression: ast.If, env: Environment) -> Optional[Object]:
     assert if_expression.condition is not None
@@ -155,6 +162,13 @@ def _to_boolean_object(value: bool) -> Boolean:
     return TRUE if value else FALSE
 
 
+
+
+
+
+
+
+
 def evaluate(node: ast.ASTNode, env: Environment) -> Optional[Object]:
     node_type: Type = type(node)
 
@@ -216,5 +230,19 @@ def evaluate(node: ast.ASTNode, env: Environment) -> Optional[Object]:
 
         assert value is not None
         return Return(value)
+    
+    elif node_type == ast.LetStatement:
+        node = cast(ast.LetStatement, node)
+
+        assert node.value is not None
+        value = evaluate(node.value, env)
+
+        assert node.name is not None
+        env[node.name.value] = value
+    
+    elif node_type == ast.Identifier:
+        node = cast(ast.Identifier, node)
+
+        return _evaluate_identifier(node, env)
     
     return None

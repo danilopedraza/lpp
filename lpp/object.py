@@ -90,7 +90,7 @@ class Environment(Dict):
     def __init__(self):
         self._store = dict()
     
-    def _getitem__(self, key):
+    def __getitem__(self, key):
         return self._store[key]
     
     def __setitem__(self, key, value):

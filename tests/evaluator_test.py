@@ -28,13 +28,14 @@ class EvaluatorTest(TestCase):
         tests: List[Tuple[str, Any]] = [
             ('variable x = 5; x;', 5),
             ('variable x = 2 * 3; x;', 6),
-            ('variable a = ve; a;', True),
-            ('variable x = 2 * 3; variable y = x + 1;', 7),
+            ('variable x = 2 * 3; variable y = x + 1; y;', 7),
+            ('variable x = verdadero; variable y = !x; y;', False)
         ]
+
         for source, expected in tests:
             evaluated = self._evaluate_tests(source)
             if type(expected) == int:
-                self._test_boolean_object(evaluated, expected)
+                self._test_integer_object(evaluated, expected)
             elif type(expected) == bool:
                 self._test_boolean_object(evaluated, expected)
 
@@ -99,7 +100,8 @@ class EvaluatorTest(TestCase):
             ('si (verdadero) {10;}', 10),
             ('si (falso) {10;}', None),
             ('si (falso) {10;} sino {si (verdadero) {1;}}', 1),
-            ('si (2 < 1) {1;} sino {falso;}', False)
+            ('si (2 < 1) {1;} sino {falso;}', False),
+            #('si (!0) {1;}', 1)
         ]
 
         for source, expected in tests:
