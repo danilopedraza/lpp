@@ -3,6 +3,7 @@ from typing import List
 
 from lpp.ast import Program
 from lpp.evaluator import evaluate
+from lpp.object import Environment
 from lpp.parser import Parser
 from lpp.lexer import Lexer
 from lpp.token import(
@@ -30,5 +31,5 @@ def start_repl() -> None:
             _print_parse_errors(parser.errors)
             continue
         
-        if evaluated := evaluate(program):
+        if evaluated := evaluate(program, Environment()):
             print(evaluated.inspect())
