@@ -206,7 +206,7 @@ class Function(Expression):
         param_list: List[str] = [str(parameter) for parameter in self.parameters]
         params: str = ', '.join(param_list)
 
-        return f'{self.token_literal()}(params) {str(self.body)}'
+        return f'{self.token_literal()}({params}) {str(self.body)}'
 
 
 class Call(Expression):

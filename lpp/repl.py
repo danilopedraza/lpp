@@ -1,3 +1,7 @@
+import readline
+from typing import List
+from lpp.ast import Program
+from lpp.parser import Parser
 from lpp.lexer import Lexer
 from lpp.token import(
     Token,
@@ -8,9 +12,20 @@ from lpp.token import(
 EOF_TOKEN: Token = Token(TokenType.EOF, '')
 
 
+def _print_parse_errors(errors: List[str]):
+    for error in errors:
+        print(error)
+
+
 def start_repl() -> None:
     while (source := input('>> ')) != 'salir':
         lexer: Lexer = Lexer(source)
+        parser: Parser = Parser(lexer)
+        
+        program: Program = parser.parse_program()
 
-        while (token := lexer.next_token()) != EOF_TOKEN:
-            print(token)
+        if len(parser.errors) > 0:
+            _print_parse_errors(parser.errors)
+            continue
+    
+        print(program)
