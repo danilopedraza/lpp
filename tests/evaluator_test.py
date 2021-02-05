@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     cast,
     List,
     Tuple
@@ -6,7 +7,10 @@ from typing import (
 from unittest import TestCase
 
 from lpp.ast import Program
-from lpp.evaluator import evaluate
+from lpp.evaluator import (
+    evaluate,
+    NULL
+)
 from lpp.lexer import Lexer
 from lpp.object import (
     Integer,
@@ -44,6 +48,24 @@ class EvaluatorTest(TestCase):
         for source, expected in tests:
             evaluated = self._evaluate_tests(source)
             self._test_boolean_object(evaluated, expected)
+    
+    def test_if_else_evaluation(self) -> None:
+        tests: List[Tuple[str, Any]] = [
+            ('si (verdadero) {10;}', 10),
+            ('si (falso) {10;}', None),
+            ('si (falso) {10;} sino {si (verdadero) {1;}}', 1),
+            ('si (2 < 1) {1;} sino {falso;}', False)
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+
+            if type(expected) == int:
+                self._test_integer_object(evaluated, expected)
+            elif type(expected) == bool:
+                self._test_boolean_object(evaluated, expected)
+            else:
+                self._test_null_object(evaluated)
 
     def test_integer_evaluation(self) -> None:
         tests: List[Tuple[str, int]] = [
@@ -81,3 +103,6 @@ class EvaluatorTest(TestCase):
 
         evaluated = cast(Integer, evaluated)
         self.assertEquals(evaluated.value, expected)
+    
+    def _test_null_object(self, evaluated: Object) -> None:
+        self.assertEquals(evaluated, NULL)
