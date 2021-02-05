@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     cast,
     List,
     Optional,
@@ -7,6 +8,7 @@ from typing import (
 
 import lpp.ast as ast
 from lpp.object import (
+    Error,
     Integer,
     Boolean,
     Null,
@@ -16,9 +18,16 @@ from lpp.object import (
 )
 
 
+# type constants
 TRUE = Boolean(True)
 FALSE = Boolean(False)
 NULL = Null()
+
+
+# error constants
+_TYPE_MISMATCH = 'Discrepancia de tipos: {} {} {}'
+_UNKNOWN_INFIX_OPERATOR = 'Operador desconocido: {} {} {}'
+_UNKNOWN_PREFIX_OPERATOR = 'Operador desconocido: {}{}'
 
 
 def _evaluate_bang_operator_expression(right: Object) -> Object:
@@ -37,7 +46,7 @@ def _evaluate_block_statements(block: ast.Block) -> Optional[Object]:
     for statement in block.statements:
         result = evaluate(statement)
 
-        if result is not None and result.type() == ObjectType.RETURN:
+        if result is not None and result.type() in [ObjectType.RETURN, ObjectType.ERROR]:
             return result
     
     return result
@@ -65,8 +74,10 @@ def _evaluate_infix_expression(operator: str,
         return _to_boolean_object(left is right)
     elif operator == '!=':
         return _to_boolean_object(left is not right)
+    elif left.type() != right.type():
+        return _new_error(_TYPE_MISMATCH, [left.type().name, operator, right.type().name])
     
-    return NULL
+    return _new_error(_UNKNOWN_INFIX_OPERATOR, [left.type().name, operator, right.type().name])
 
 def _evaluate_integer_infix_expression(operator: str,
                                        left: Object,
@@ -95,11 +106,11 @@ def _evaluate_integer_infix_expression(operator: str,
     elif operator == '!=':
         return _to_boolean_object(left_value != right_value)
     
-    return NULL
+    return _new_error(_UNKNOWN_INFIX_OPERATOR, [left.type().name, operator, right.type().name])
 
 def _evaluate_minus_operator_expression(right: Object) -> Object:
     if type(right) != Integer:
-        return NULL
+        return _new_error(_UNKNOWN_PREFIX_OPERATOR, ['-', right.type().name])
     
     right = cast(Integer, right)
 
@@ -111,7 +122,7 @@ def _evaluate_prefix_expression(operator: str, right: Object) -> Object:
     elif operator == '-':
         return _evaluate_minus_operator_expression(right)
 
-    return NULL
+    return _new_error(_UNKNOWN_PREFIX_OPERATOR, [operator, right.type().name])
 
 def _evaluate_program(program: ast.Program) -> Optional[Object]:
     result: Optional[Object]  = None
@@ -121,6 +132,8 @@ def _evaluate_program(program: ast.Program) -> Optional[Object]:
         if type(result) == Return:
             result = cast(Return, result)
             return result.value
+        if type(result) == Error:
+            return result
     
     return result
 
@@ -133,6 +146,9 @@ def _is_truthy(obj: Object) -> bool:
         return False
     
     return True
+
+def _new_error(message: str, args: List[Any]) -> Error:
+    return Error(message.format(*args))
 
 def _to_boolean_object(value: bool) -> Boolean:
     return TRUE if value else FALSE
