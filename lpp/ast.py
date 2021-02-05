@@ -191,6 +191,7 @@ class If(Expression):
         
         return out
 
+
 class Function(Expression):
 
     def __init__(self,
@@ -206,3 +207,20 @@ class Function(Expression):
         params: str = ', '.join(param_list)
 
         return f'{self.token_literal()}(params) {str(self.body)}'
+
+
+class Call(Expression):
+    
+    def __init__(self,
+                 token,
+                 function: Expression,
+                 arguments: Optional[List[Expression]] = None) -> None:
+        super().__init__(token)
+        self.function = function
+        self.arguments = arguments
+    
+    def __str__(self) -> str:
+        assert self.arguments is not None
+        args = ', '.join([str(argument) for argument in self.arguments])
+
+        return f'{str(self.function)}({args})'

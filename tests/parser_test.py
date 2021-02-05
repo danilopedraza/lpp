@@ -10,6 +10,7 @@ from unittest import TestCase
 from lpp.ast import (
     Block,
     Boolean,
+    Call,
     Expression,
     ExpressionStatement,
     Function,
@@ -43,6 +44,23 @@ class ParserTest(TestCase):
 
             assert expression_statement.expression is not None
             self._test_literal_expression(expression_statement.expression, expected_value)
+    
+    def test_call_expression(self) -> None:
+        source: str = 'suma(1, 2 * 3, 4 + 5);'
+        lexer: Lexer = Lexer(source)
+        parser: Parser = Parser(lexer)
+
+        program: Program = parser.parse_program()
+
+        call = cast(Call, cast(ExpressionStatement, program.statements[0]).expression)
+        self.assertIsInstance(call, Call)
+        self._test_identifier(call.function, 'suma')
+
+        assert call.arguments is not None
+        self.assertEquals(len(call.arguments), 3)
+        self._test_literal_expression(call.arguments[0], 1)
+        self._test_infix_expression(call.arguments[1], 2, '*', 3)
+        self._test_infix_expression(call.arguments[2], 4, '+', 5)
 
     def test_function_literal(self) -> None:
         source: str = 'procedimiento(x, y) { x + y; }'
@@ -217,7 +235,9 @@ class ParserTest(TestCase):
             ('!-a;', '(!(-a))', 1),
             ('a + b / c;', '(a + (b / c))', 1),
             ('3 + 4; -5 * 5;','(3 + 4)((-5) * 5)', 2),
-            ('(3 - 2) / (2 + 3)', '((3 - 2) / (2 + 3))', 1)
+            ('(3 - 2) / (2 + 3)', '((3 - 2) / (2 + 3))', 1),
+            ('a + suma(b * c) + d;', '((a + suma((b * c))) + d)', 1),
+            ('suma(2 + 3, 5, suma(7, 8 + 9));', 'suma((2 + 3), 5, suma(7, (8 + 9)))', 1)
         ]
 
         for source, expected_result, expected_statement_count in test_sources:

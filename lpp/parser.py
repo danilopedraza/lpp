@@ -17,6 +17,7 @@ from lpp.lexer import Lexer
 from lpp.ast import (
     Block,
     Boolean,
+    Call,
     Expression,
     ExpressionStatement,
     Function,
@@ -57,7 +58,8 @@ PRECEDENCES: Dict[TokenType, Precedence] = {
     TokenType.PLUS: Precedence.SUM,
     TokenType.MINUS: Precedence.SUM,
     TokenType.MULTIPLICATION: Precedence.PRODUCT,
-    TokenType.DIVISION: Precedence.PRODUCT
+    TokenType.DIVISION: Precedence.PRODUCT,
+    TokenType.LPAREN: Precedence.CALL
 }
 
 
@@ -128,6 +130,37 @@ class Parser:
 
         return Boolean(token=self._current_token,
                        value=self._current_token.token_type == TokenType.TRUE)
+    
+    def _parse_call(self, function: Expression) -> Call:
+        assert self._current_token is not None
+        call = Call(self._current_token, function)
+        call.arguments = self._parse_call_arguments()
+
+        return call
+    
+    def _parse_call_arguments(self) -> Optional[List[Expression]]:
+        assert self._peek_token is not None
+        if self._peek_token.token_type == TokenType.RPAREN:
+            self._advance_tokens()
+            return []
+        
+        args: List[Expression] = []
+
+        self._advance_tokens()
+        if expression := self._parse_expression(Precedence.LOWEST):
+            args.append(expression)
+        
+        while self._peek_token.token_type == TokenType.COMMA:
+            self._advance_tokens()
+            self._advance_tokens()
+            
+            if expression := self._parse_expression(Precedence.LOWEST):
+                args.append(expression)
+        
+        if not self._expected_token(TokenType.RPAREN):
+            return None
+
+        return args
     
     def _parse_expression(self, precedence: Precedence) -> Optional[Expression]:
         assert self._current_token is not None
@@ -374,7 +407,8 @@ class Parser:
                 TokenType.PLUS: self._parse_infix_expression,
                 TokenType.MINUS: self._parse_infix_expression,
                 TokenType.MULTIPLICATION: self._parse_infix_expression,
-                TokenType.DIVISION: self._parse_infix_expression
+                TokenType.DIVISION: self._parse_infix_expression,
+                TokenType.LPAREN: self._parse_call
         }
     
     def _register_prefix_fns(self) -> PrefixParseFns:
