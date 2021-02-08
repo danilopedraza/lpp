@@ -24,6 +24,7 @@ class ObjectType(Enum):
     INTEGER = auto()
     NULL = auto()
     RETURN = auto()
+    STRING = auto()
 
 
 class Object(ABC):
@@ -132,3 +133,15 @@ class Function(Object):
     def inspect(self) -> str:
         params: str = ', '.join([str(param) for param in self.parameters])
         return 'procedimiento({}) {{\n{}\n}}'.format(params, str(self.body))
+
+
+class String(Object):
+
+    def __init__(self, value: str) -> None:
+        self.value = value
+    
+    def type(self) -> ObjectType:
+        return ObjectType.STRING
+    
+    def inspect(self) -> str:
+        return self.value

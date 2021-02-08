@@ -224,3 +224,22 @@ class LexerTest(TestCase):
         ]
 
         return self.assertEquals(tokens, expected_tokens)
+    
+    def test_string(self) -> None:
+        source: str = '''
+                        "a";
+                        "Loren Ipsum AAAAA";
+                      '''
+        lexer: Lexer = Lexer(source)
+        tokens: List[Token] = []
+        for _ in range(4):
+            tokens.append(lexer.next_token())
+        
+        expected_tokens: List[Token] = [
+            Token(TokenType.STRING, 'a'),
+            Token(TokenType.SEMICOLON, ';'),
+            Token(TokenType.STRING, 'Loren Ipsum AAAAA'),
+            Token(TokenType.SEMICOLON, ';'),
+        ]
+        
+

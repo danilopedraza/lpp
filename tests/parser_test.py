@@ -20,6 +20,7 @@ from lpp.ast import (
     Integer,
     Prefix,
     ReturnStatement,
+    StringLiteral,
     LetStatement,
     Program
 )
@@ -429,6 +430,19 @@ class ParserTest(TestCase):
                                         expected_left,
                                         expected_operator,
                                         expected_right)
+    
+    def string_literal_expression(self) -> None:
+        source: str = '"Hola perra"'
+        lexer: Lexer = Lexer(source)
+        parser: Parser = Parser(lexer)
+
+        program: Program = parser.parse_program()
+
+        expression_statement = cast(ExpressionStatement, program.statements[0])
+        string_literal = cast(StringLiteral, expression_statement.expression)
+
+        self.assertIsInstance(string_literal, StringLiteral)
+        self.assertEquals(string_literal.value, 'Hola perra')
     
     def _test_infix_expression(self,
                                expression: Expression,

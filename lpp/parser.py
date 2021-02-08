@@ -29,7 +29,8 @@ from lpp.ast import (
     Prefix,
     Program,
     ReturnStatement,
-    Statement
+    Statement,
+    StringLiteral
 )
 
 PrefixParseFn = Callable[[], Optional[Expression]]
@@ -391,6 +392,10 @@ class Parser:
         else:
             return self._parse_expression_statement()
     
+    def _parse_string_literal(self) -> Expression:
+        assert self._current_token is not None
+        return StringLiteral(token=self._current_token, value=self._current_token.literal)
+    
     def _peek_precedence(self) -> Precedence:
         assert self._peek_token is not None
 
@@ -424,5 +429,6 @@ class Parser:
             TokenType.NOT: self._parse_prefix_expression,
             TokenType.LPAREN: self._parse_grouped_expression,
             TokenType.IF: self._parse_if,
-            TokenType.FUNCTION: self._parse_function
+            TokenType.FUNCTION: self._parse_function,
+            TokenType.STRING: self._parse_string_literal
         }

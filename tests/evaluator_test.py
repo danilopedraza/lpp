@@ -18,7 +18,8 @@ from lpp.object import (
     Error,
     Function,
     Integer,
-    Object
+    Object,
+    String
 )
 from lpp.parser import Parser
 
@@ -195,6 +196,18 @@ class EvaluatorTest(TestCase):
             evaluated = self._evaluate_tests(source)
             self._test_integer_object(evaluated, expected)
 
+    def test_string_evaluation(self) -> None:
+        tests: List[Tuple[str, str]] = [
+            ('"Hello, World!"', 'Hello, World!'),
+            ('procedimiento(){regresa "Hola bb";}()', 'Hola bb')
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self.assertIsInstance(evaluated, String)
+
+            evaluated = cast(String, evaluated)
+            self.assertEquals(evaluated.value, expected)
 
     
     def _evaluate_tests(self, source: str) -> Object:

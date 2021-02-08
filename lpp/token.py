@@ -40,6 +40,7 @@ class TokenType(Enum):
     RETURN = auto()
     RPAREN = auto()
     SEMICOLON = auto()
+    STRING = auto()
     TRUE = auto()
 
 class Token(NamedTuple):

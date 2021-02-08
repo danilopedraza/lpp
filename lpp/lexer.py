@@ -86,6 +86,10 @@ class Lexer:
             literal = self._read_number()
             return Token(TokenType.INT, literal)
         
+        elif match(r"^\"|'$", self._character):
+            literal = self._read_string()
+            return Token(TokenType.STRING, literal)
+        
         else:
             token = Token(TokenType.ILLEGAL, self._character)
         
@@ -140,3 +144,17 @@ class Lexer:
     def _skip_whitespace(self) -> None:
         while match(r'^\s$', self._character):
             self._read_character()
+    
+    def _read_string(self) -> str:
+        initial_character = self._character
+        self._read_character()
+        initial_position = self._position
+
+        while self._character != initial_character and self._read_position <= len(self._source):
+            self._read_character()
+        
+        string = self._source[initial_position : self._position]
+
+        self._read_character()
+
+        return string
