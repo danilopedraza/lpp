@@ -96,6 +96,40 @@ class EvaluatorTest(TestCase):
             evaluated = cast(Error, evaluated)
             self.assertEquals(evaluated.message, expected)
     
+    def test_function_calls(self) -> None:
+        tests: List[Tuple[str, int]] = [
+            ('variable a = procedimiento(x) {x}; a(5);', 5),
+            ('''
+                variable a = procedimiento(x) {
+                    regresa x;
+                };
+                a(5);
+            ''', 5),
+            ('''
+                variable a = procedimiento(x) {
+                    regresa 2 * x;
+                };
+                a(5);
+            ''', 10),
+            ('''
+                variable a = procedimiento(x, y) {
+                    regresa x + y;
+                };
+                a(5, 2);
+            ''', 7),
+            ('''
+                variable a = procedimiento(x, y) {
+                    regresa x + y;
+                };
+                a(5, a(2, 1));
+            ''', 8),
+            ('procedimiento(x){x}(5)', 5)
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self._test_integer_object(evaluated, expected)
+
     def test_function_evaluation(self) -> None:
         source: str = 'procedimiento(x) {x + 2;}'
         evaluated = self._evaluate_tests(source)
