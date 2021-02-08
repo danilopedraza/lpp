@@ -87,7 +87,9 @@ class EvaluatorTest(TestCase):
                 }
             ''',
             'Operador desconocido: BOOLEAN * BOOLEAN'),
-            ('x = 4;', 'Identificador no encontrado: x')
+            ('x = 4;', 'Identificador no encontrado: x'),
+            ('"Foo" - "Bar";',
+             'Operador desconocido: STRING - STRING'),
         ]
 
         for source, expected in tests:
@@ -204,11 +206,46 @@ class EvaluatorTest(TestCase):
 
         for source, expected in tests:
             evaluated = self._evaluate_tests(source)
-            self.assertIsInstance(evaluated, String)
+            self._test_string_object(evaluated, expected)
+    
+    def test_string_concatenation(self) -> None:
+        tests: List[Tuple[str, str]] = [
+            ('"Foo" + "bar";', 'Foobar'),
+            ('"Hello," + " " + "world!"', 'Hello, world!'),
+            ('''
+                 variable saludo = procedimiento(nombre) {
+                     regresa "Hola " + nombre + "!";
+                 };
+                 saludo("David");
+              ''',
+              'Hola David!'),
+        ]
 
-            evaluated = cast(String, evaluated)
-            self.assertEquals(evaluated.value, expected)
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self._test_string_object(evaluated, expected)
 
+    def test_string_comparison(self) -> None:
+        tests: List[Tuple[str, bool]] = [
+            ('"a" == "a"', True),
+            ('"a" != "a"', False),
+            ('"a" == "b"', False),
+            ('"a" != "b"', True),
+            ('"a" <= "b"', True),
+            ('"a" < "b"', True),
+            ('"a" > "b"', False),
+            ('"a" >= "b"', False),
+        ]
+
+        for source, expected in tests:
+            evaluated = self._evaluate_tests(source)
+            self._test_boolean_object(evaluated, expected)
+
+    def _test_string_object(self, evaluated: Object, expected: str) -> None:
+        self.assertIsInstance(evaluated, String)
+
+        evaluated = cast(String, evaluated)
+        self.assertEquals(evaluated.value, expected)
     
     def _evaluate_tests(self, source: str) -> Object:
         lexer: Lexer = Lexer(source)

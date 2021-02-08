@@ -103,8 +103,10 @@ def _evaluate_if_expression(if_expression: ast.If, env: Environment) -> Optional
 def _evaluate_infix_expression(operator: str,
                                left: Object,
                                right: Object) -> Object:
-    if ObjectType.INTEGER == left.type() == right.type():
+    if  ObjectType.INTEGER == left.type() == right.type():
         return _evaluate_integer_infix_expression(operator, left, right)
+    elif ObjectType.STRING == left.type() == right.type():
+        return _evaluate_string_infix_expression(operator, left, right)
     elif operator == '==':
         return _to_boolean_object(left is right)
     elif operator == '!=':
@@ -171,6 +173,31 @@ def _evaluate_program(program: ast.Program, env: Environment) -> Optional[Object
             return result
     
     return result
+
+def _evaluate_string_infix_expression(operator: str,
+                                      left: Object,
+                                      right: Object) -> Object:
+    left_value: str = cast(String, left).value
+    right_value: str = cast(String, right).value
+
+    if operator == '+':
+        return String(left_value + right_value)
+    elif operator == '<':
+        return _to_boolean_object(left_value < right_value)
+    elif operator == '<=':
+        return _to_boolean_object(left_value <= right_value)
+    elif operator == '>':
+        return _to_boolean_object(left_value > right_value)
+    elif operator == '>=':
+        return _to_boolean_object(left_value >= right_value)
+    elif operator == '==':
+        return _to_boolean_object(left_value == right_value)
+    elif operator == '!=':
+        return _to_boolean_object(left_value != right_value)
+    else:
+        return _new_error(_UNKNOWN_INFIX_OPERATOR, [left.type().name,
+                                                    operator,
+                                                    right.type().name])
 
 def _extend_function_environment(fn: Function, args: List[Object]) -> Environment:
     env = Environment(outer= fn.env)
